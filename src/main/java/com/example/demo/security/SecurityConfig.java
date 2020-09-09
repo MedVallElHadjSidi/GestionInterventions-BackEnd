@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+
 @EnableWebSecurity
 public class SecurityConfig  extends WebSecurityConfigurerAdapter {
     @Autowired
@@ -32,12 +33,14 @@ public class SecurityConfig  extends WebSecurityConfigurerAdapter {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.formLogin();
         http.authorizeRequests()
-                .antMatchers("/login/**","/addUser/**").permitAll()
-                .antMatchers(HttpMethod.POST,"/adresses/**")
+                .antMatchers("ChercherByCodeAdresseAll/**","/chercheByCodeAdresse/{code}/**","/login/**","/addUser/**","/ws/**","/topic/greetings/**", "/app/**").permitAll()
+                .antMatchers(HttpMethod.POST,"/addAgence/**","/affectAgUser/**")
                 .hasAuthority("ADMIN")
+                .antMatchers((HttpMethod.GET)).permitAll()
                 .anyRequest()
                 .authenticated();
         http.addFilter(new JWTAuthentificationFilter(authenticationManager()));
         http.addFilterBefore(new JWTAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
+
 }

@@ -13,8 +13,8 @@ import java.io.Serializable;
 @Entity
 @Data @NoArgsConstructor @AllArgsConstructor
 public class Adresse implements Serializable {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private  Long idAdresse;
+    @Id
+    private  String codeAdresse;
     private  String wilaye;
     private  String commune;
     private String ville;

@@ -1,13 +1,31 @@
 package com.example.demo.Services;
 
-import com.example.demo.Entities.Role;
+import com.example.demo.Entities.*;
+import com.example.demo.model.ModelCategorie;
 
-import com.example.demo.Entities.Utilisateur;
+import java.util.List;
 
 public interface AccountService {
+    public List<String>   RespoSansService();
+    public  List<String>ServiceSansRespo();
+    public ServiceBMCI AffectServiceIntervenant(String nomService,String intervenant);
+    public  ServiceBMCI AffectRespoServic(String nomService,String respo);
+    public  List<String>IntervenantNames();
+    public  Materiel AddMateriel(Materiel materiel);
+    public Categorie AddCategorie(ModelCategorie categorie);
+    public List<String>UtilisateurSansRoles();
+    public  List<String>UtilisateursNames();
     public Utilisateur addUser(Utilisateur user);
     public Role addRole(Role roles);
     public Utilisateur findUserByUser(String codeUser);
-    public  void  AddRoles(String username,String rolename);
-    public  void AddAgenceUser(String agencename,String username);
+    public  Utilisateur  AddRoles(String username,String rolename);
+    public  Utilisateur AddAgenceUser(String agencename,String username);
+    public void AddIntervenant(String nomService,String username);
+    public Adresse AddAdresse(Adresse adresse);
+    public Agence AddAgence(String nomAgence ,String adresse);
+    public  void AddService(String codeService,String nomService,String username);
+    public Adresse findByCodeAdresse(String codeAdresse);
+
+
+
 }

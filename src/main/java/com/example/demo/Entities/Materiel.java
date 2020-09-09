@@ -13,6 +13,7 @@ import java.util.Collection;
 public class Materiel implements Serializable {
     @Id  @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Long idMateriel;
+    @Column(unique = true)
     private  String nom;
     private  String model;
     private  String processeur;

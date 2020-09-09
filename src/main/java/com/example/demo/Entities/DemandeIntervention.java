@@ -18,7 +18,7 @@ public class DemandeIntervention implements Serializable {
     private Date date_Demande;
     @ManyToOne
     @JoinColumn(name = "Id_Service")
-    private  Service service;
+    private ServiceBMCI service;
     @ManyToOne
     @JoinColumn(name = "Code_User")
     private Utilisateur utilisateurs;

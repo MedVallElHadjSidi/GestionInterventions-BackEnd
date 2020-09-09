@@ -1,5 +1,6 @@
 package com.example.demo.Entities;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,5 +13,6 @@ public class Categorie  implements Serializable {
     private  Long idCategorie;
     private  String nom;
     @OneToOne
+
     private Categorie parent;
 }
