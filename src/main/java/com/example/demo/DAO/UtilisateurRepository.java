@@ -8,7 +8,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.util.List;
 
-@RepositoryRestResource
+
 public interface UtilisateurRepository  extends JpaRepository<Utilisateur,String> {
     public Utilisateur findByUsername(String code);
     @Query("select distinct us from Utilisateur us where us.username like:x")

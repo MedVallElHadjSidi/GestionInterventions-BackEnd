@@ -1,15 +1,17 @@
 package com.example.demo.Entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Collection;
 
 @Entity
-@Data @NoArgsConstructor @AllArgsConstructor
+@Data  @NoArgsConstructor  @AllArgsConstructor @ToString
 public class Materiel implements Serializable {
     @Id  @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Long idMateriel;
@@ -18,5 +20,10 @@ public class Materiel implements Serializable {
     private  String model;
     private  String processeur;
     @ManyToMany()
+    @ToString.Exclude
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Collection<Panne>pannes;
+    @ManyToOne
+    @JoinColumn(name = "Agence")
+    private Agence agence;
 }

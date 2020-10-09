@@ -10,7 +10,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import java.util.List;
 
-@RepositoryRestResource
+
 public interface ServiceRepository extends JpaRepository<ServiceBMCI,String> {
 
     public ServiceBMCI findByNom(String nom);
@@ -20,6 +20,10 @@ public interface ServiceRepository extends JpaRepository<ServiceBMCI,String> {
 
     @Query("select distinct ser from ServiceBMCI ser   ")
     public List<ServiceBMCI> ServiceNamesSansAdmi();
+    @Query("select distinct ser.utilisateurs from ServiceBMCI ser  where ser.nom like:y ")
+    public List<Utilisateur>UTILISATEURSServices(@Param("y")String nom);
+
+
 
 
 

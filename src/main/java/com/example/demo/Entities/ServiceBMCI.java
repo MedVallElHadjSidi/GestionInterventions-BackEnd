@@ -1,5 +1,6 @@
 package com.example.demo.Entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,19 +12,22 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-@Entity @Data @NoArgsConstructor @AllArgsConstructor @ToString
-
+@Entity
+@Data  @NoArgsConstructor  @AllArgsConstructor @ToString
 public class ServiceBMCI implements Serializable {
     @Id
     private  String codeService;
     @Column(unique = true)
     private  String nom;
+    @JsonIgnore
     @OneToMany(mappedBy = "service")
-
     @ToString.Exclude
+
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Collection<Utilisateur>utilisateurs;
+    @JsonIgnore
     @OneToMany(mappedBy =  "service")
+    @ToString.Exclude
     private  Collection<DemandeIntervention>demandeInterventions;
     public ServiceBMCI(String codeService, String nomservice, List<Utilisateur>utilisateurs){
         this.codeService=codeService;

@@ -6,6 +6,10 @@ import com.example.demo.model.ModelCategorie;
 import java.util.List;
 
 public interface AccountService {
+    public void DemandeRejeter(DemandeIntervention demandeIntervention);
+    public List<DemandeIntervention> NouveauxDemandes();
+    public  Utilisateur ServiceRespo(String servicename);
+    public  List<String>MaterielNames(String username);
     public List<String>   RespoSansService();
     public  List<String>ServiceSansRespo();
     public ServiceBMCI AffectServiceIntervenant(String nomService,String intervenant);

@@ -32,6 +32,41 @@ public class AccountServiceImp implements AccountService{
     private  CategorieRepository categorieRepository;
     @Autowired
     private  MaterielRepository materielRepository;
+    @Autowired
+    private  DemandeRepository demandeRepository;
+
+    @Override
+    public void DemandeRejeter(DemandeIntervention demandeIntervention) {
+        demandeIntervention.setEtat_Demande("Rejeter");
+        demandeRepository.save(demandeIntervention);
+
+    }
+
+    @Override
+    public List<DemandeIntervention> NouveauxDemandes() {
+        return demandeRepository.NouveauDemande();
+    }
+
+    @Override
+    public Utilisateur ServiceRespo(String servicename) {
+        Utilisateur utilisateur=new Utilisateur();
+        List<Utilisateur>utilisateurs=serviceRepository.UTILISATEURSServices(servicename);
+        for (Utilisateur u :utilisateurs){
+            for (Role r:u.getRoles()){
+                if (r.getRoleName().equals("RESPONSABLE")){
+                    utilisateur=u;
+                }
+            }
+
+        }
+        return utilisateur;
+    }
+
+    @Override
+    public List<String> MaterielNames(String username) {
+
+        return materielRepository.MaterielsNames(username);
+    }
 
     @Override
     public List<String> RespoSansService() {
@@ -264,7 +299,7 @@ public class AccountServiceImp implements AccountService{
         System.out.println(adresse.toString());
         if (adresseres!=null){
 
-            agence=agenceRepository.save(new Agence(null,nomAgence,adresseres,null));
+            agence=agenceRepository.save(new Agence(null,nomAgence,adresseres,null,null));
         }
         return agence;
     }

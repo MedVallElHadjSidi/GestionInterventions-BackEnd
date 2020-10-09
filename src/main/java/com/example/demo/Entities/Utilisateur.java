@@ -26,16 +26,20 @@ public  class Utilisateur implements Serializable {
     @JoinColumn(name = "Agence")
     private  Agence agence;
     @ManyToMany(fetch = FetchType.EAGER)
-
     private Collection<Role> roles;
+    @JsonIgnore
     @OneToMany(mappedBy = "utilisateurs")
+    @ToString.Exclude
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Collection<DemandeIntervention>demandeInterventions;
+
     @ManyToOne
     @JoinColumn(name = "Service_ID")
-    @ToString.Exclude
+
     private ServiceBMCI service;
+    @JsonIgnore
     @ManyToMany
+
 
     private  Collection<Espace>espaces;
 
