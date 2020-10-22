@@ -1,11 +1,10 @@
 package com.example.demo.model;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data @NoArgsConstructor @AllArgsConstructor
+@Data
+@NoArgsConstructor @AllArgsConstructor
 public class ModelUser {
     private  String code;
     private  String nom;
@@ -14,4 +13,5 @@ public class ModelUser {
     private String username;
     private String password;
     private  String confirmation;
+    private String rolename;
 }

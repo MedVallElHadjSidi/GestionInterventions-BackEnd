@@ -1,21 +1,23 @@
 package com.example.demo.Services;
 
+
 import com.example.demo.Entities.*;
 import com.example.demo.model.ModelCategorie;
 
 import java.util.List;
 
 public interface AccountService {
+    public  Long CreerEspaceInter1(Long id,String username);
     public void DemandeRejeter(DemandeIntervention demandeIntervention);
     public List<DemandeIntervention> NouveauxDemandes();
-    public  Utilisateur ServiceRespo(String servicename);
+    public Utilisateur ServiceRespo(String servicename);
     public  List<String>MaterielNames(String username);
     public List<String>   RespoSansService();
     public  List<String>ServiceSansRespo();
-    public ServiceBMCI AffectServiceIntervenant(String nomService,String intervenant);
+    public ServiceBMCI AffectServiceIntervenant(String nomService, String intervenant);
     public  ServiceBMCI AffectRespoServic(String nomService,String respo);
     public  List<String>IntervenantNames();
-    public  Materiel AddMateriel(Materiel materiel);
+    public Materiel AddMateriel(Materiel materiel);
     public Categorie AddCategorie(ModelCategorie categorie);
     public List<String>UtilisateurSansRoles();
     public  List<String>UtilisateursNames();

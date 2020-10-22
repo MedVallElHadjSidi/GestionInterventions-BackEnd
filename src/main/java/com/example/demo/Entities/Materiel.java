@@ -1,17 +1,19 @@
 package com.example.demo.Entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
+
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Collection;
 
 @Entity
-@Data  @NoArgsConstructor  @AllArgsConstructor @ToString
+@Data
+
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class Materiel implements Serializable {
     @Id  @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Long idMateriel;

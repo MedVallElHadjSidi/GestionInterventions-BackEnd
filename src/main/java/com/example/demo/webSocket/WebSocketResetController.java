@@ -4,11 +4,11 @@ package com.example.demo.webSocket;
 import com.example.demo.DAO.*;
 import com.example.demo.Entities.*;
 import com.example.demo.Services.AccountService;
+import com.example.demo.model.EnvoyerMessage;
 import com.example.demo.model.ModelDemande;
 
 
-import org.apache.commons.io.IOUtils;
-import org.apache.tomcat.util.codec.binary.Base64;
+import com.example.demo.model.ModelMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
@@ -21,14 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 
-import javax.sql.rowset.serial.SerialBlob;
 import java.io.*;
 
 
-import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import java.util.zip.Deflater;
@@ -39,6 +38,9 @@ import java.util.zip.Deflater;
 @Transactional
 public class WebSocketResetController {
     int count=0;
+
+    @Autowired
+    private  EspaceRepository espaceRepository;
 
     @Autowired
     private MaterielRepository materielRepository;
@@ -66,8 +68,9 @@ public class WebSocketResetController {
     @ResponseBody
     public int sendReset(@RequestBody  ModelDemande message) throws IOException, SQLException {
 
-        int i=0;
-        System.out.println(message.getImage().length());
+
+        int count=0;
+      // System.out.println(message.getImage().length());
         /*
         byte[] bdata = message.getImage().getBytes(1, (int)message.getImage().length());
         String data1 = new String(bdata);
@@ -77,7 +80,7 @@ public class WebSocketResetController {
         System.out.println(bdata.length);
         Blob b = new SerialBlob(bdata);*/
 
-
+/*
         DemandeIntervention demandeIntervention=new DemandeIntervention();
 
         String userDemande=message.getUserDemander();
@@ -87,9 +90,9 @@ public class WebSocketResetController {
         System.out.println(materiel);
         String service=message.getService();
 
-        /* byte[] encodeBase64Byte = Base64.encodeBase64(message.getImage().getBytes());
+        byte[] encodeBase64Byte = Base64.encodeBase64(message.getImage().getBytes());
         Blob b = new SerialBlob(encodeBase64Byte);
-        */
+
 
 
         Panne panne=new Panne();
@@ -134,10 +137,7 @@ public class WebSocketResetController {
 
             this.template.convertAndSend("/topic/replay"+"/"+username,count);
 
-        }
-
-
-
+        }*/
 return count;
 
     }
@@ -146,11 +146,19 @@ return count;
     @MessageExceptionHandler()
     @MessageMapping("/hello")
 
-    public int sendMessage(ModelDemande message, byte[] messagebyte ) throws IOException {
+    public DemandeIntervention sendMessage(@RequestBody ModelDemande message ) throws IOException {
         int i=0;
+        DemandeIntervention demandeInterventionsNonVue=new DemandeIntervention();
 
-        System.out.println(messagebyte.length);
-
+        System.out.println(message.getImage().length());
+        /*
+        byte[] bdata = message.getImage().getBytes(1, (int)message.getImage().length());
+        String data1 = new String(bdata);
+        */
+        //System.out.println(file.getOriginalFilename());
+      /*  byte[]bdata= message.getImage().getBytes();
+        System.out.println(bdata.length);
+        Blob b = new SerialBlob(bdata);*/
 
 
         DemandeIntervention demandeIntervention=new DemandeIntervention();
@@ -162,7 +170,10 @@ return count;
         System.out.println(materiel);
         String service=message.getService();
 
-
+        /* byte[] encodeBase64Byte = Base64.encodeBase64(message.getImage().getBytes());
+        Blob b = new SerialBlob(encodeBase64Byte);
+        */
+        
         Panne panne=new Panne();
         ServiceBMCI serviceBMCI=serviceRepository.findByNom(service);
         Materiel materiel1= materielRepository.findByNom(materiel);
@@ -171,19 +182,21 @@ return count;
         panne.setCategorie(categorie);
         panne.setEtatPanne(message.getEtat());
         panne.setDescription(message.getDescription());
-       //panne.setPhotos(message.getImage());
-     //   panne.setPhotosBytes(compressBytes(messagebyte));
+        panne.setPhotos(compressBytes(message.getImage().getBytes()));
 
-       Panne panne1=panneRepository.save(panne);
+
+        Panne panne1=panneRepository.save(panne);
         List<Materiel>materielList=new ArrayList<>();
         if (panne1.getMateriels()==null){
             materielList.add(materiel1);
             panne1.setMateriels(materielList);
 
+
+
         }
         else {
             panne1.getMateriels().add(materiel1);
-            panneRepository.save(panne1);
+
         }
 
 
@@ -197,17 +210,19 @@ return count;
             demandeIntervention.setUtilisateurs(utilisateur);
             Utilisateur utilisateur1=accountService.ServiceRespo(message.getService());
             String username=utilisateur1.getUsername();
-            demandeRepository.save(demandeIntervention);
-            count=demandeRepository.NombreDeNouveauMessage();
+            demandeInterventionsNonVue=demandeRepository.save(demandeIntervention);
 
-            this.template.convertAndSend("/topic/replay"+"/"+username,count);
+           // count=demandeRepository.NombreDeNouveauMessage();
+
+
+            this.template.convertAndSend("/topic/replay"+"/"+username,demandeInterventionsNonVue);
+
         }
 
 
 
 
-
-return  count;
+return  demandeInterventionsNonVue;
     }
 
 
@@ -231,6 +246,107 @@ return  count;
 
         return outputStream.toByteArray();
     }
+
+
+
+
+
+
+    @MessageExceptionHandler()
+    @MessageMapping("/interventionsimple")
+    public  ModelMessage InterventionSimple(EnvoyerMessage message){
+        ModelMessage modelMessage=new ModelMessage();
+        System.out.println(message);
+        Espace espace=espaceRepository.findById(message.getIdespace()).get();
+        System.out.println("votre espace"+espace.getIdEspace());
+        List<ModelMessage>modelMessages=new ArrayList<>();
+        List<Utilisateur>utilisateurs= new ArrayList<>();
+        if (espace!=null){
+            utilisateurs= (List<Utilisateur>) espace.getUtilisateurs();
+            modelMessage.setNom(message.getUsername());
+            modelMessage.setMessage(message.getMessage());
+            modelMessage.setDate(new Date());
+            modelMessages.add(modelMessage);
+            System.out.println();
+            if (espace.getCommentaire()==null) {
+                espace.setCommentaire(modelMessages);
+
+                //      espace.setCommentaire((LinkedList<ModelMessage>) modelMessages);
+                espaceRepository.save(espace);
+                for (Utilisateur u:espace.getUtilisateurs()){
+                    this.template.convertAndSend("/topic/espace"+"/"+u.getUsername(),modelMessage);
+                }
+
+
+            }
+            else {
+                espace.getCommentaire().add(modelMessage);
+                espaceRepository.save(espace);
+                for (Utilisateur u:espace.getUtilisateurs()){
+                    this.template.convertAndSend("/topic/espace"+"/"+u.getUsername(),modelMessage);
+                }
+
+            }
+
+
+
+        }
+
+
+        return  modelMessage;
+
+    }
+
+
+    @PostMapping  (value = "/interventionsimple")
+    @ResponseBody
+    public ModelMessage sendMeesageversEspace(@RequestBody  EnvoyerMessage envoyerMessage) throws IOException, SQLException {
+
+        ModelMessage modelMessage=new ModelMessage();
+        System.out.println(envoyerMessage);
+        Espace espace=espaceRepository.findById(envoyerMessage.getIdespace()).get();
+        System.out.println("votre espace"+espace.getIdEspace());
+        List<ModelMessage>modelMessages=new ArrayList<>();
+        List<Utilisateur>utilisateurs= new ArrayList<>();
+
+        if (espace!=null){
+            utilisateurs= (List<Utilisateur>) espace.getUtilisateurs();
+            modelMessage.setNom(envoyerMessage.getUsername());
+            modelMessage.setMessage(envoyerMessage.getMessage());
+            modelMessage.setDate(new Date());
+            modelMessages.add(modelMessage);
+            System.out.println();
+            if (espace.getCommentaire()==null) {
+                espace.setCommentaire(modelMessages);
+
+
+          //      espace.setCommentaire((LinkedList<ModelMessage>) modelMessages);
+                espaceRepository.save(espace);
+                for (Utilisateur u:espace.getUtilisateurs()){
+                    this.template.convertAndSend("/topic/replay"+"/"+u.getUsername(),modelMessage.getMessage());
+                }
+
+
+            }
+            else {
+                espace.getCommentaire().add(modelMessage);
+                espaceRepository.save(espace);
+                for (Utilisateur u:espace.getUtilisateurs()){
+                    this.template.convertAndSend("/topic/replay"+"/"+u.getUsername(),modelMessage);
+                }
+
+            }
+
+
+
+        }
+
+
+
+        return  modelMessage;
+
+    }
+
 
 
 

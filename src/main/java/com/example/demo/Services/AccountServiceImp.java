@@ -10,11 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Transactional
+
 public class AccountServiceImp implements AccountService{
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -34,6 +35,43 @@ public class AccountServiceImp implements AccountService{
     private  MaterielRepository materielRepository;
     @Autowired
     private  DemandeRepository demandeRepository;
+    @Autowired
+    private  EspaceRepository espaceRepository;
+    @Autowired
+    private  InterventionRepository interventionRepository;
+
+    @Override
+    public Long CreerEspaceInter1(Long id, String username) {
+        Espace res=new Espace();
+        List<Utilisateur>utilisateurs=new ArrayList<>();
+        DemandeIntervention demandeIntervention=demandeRepository.findById(id).get();
+        demandeIntervention.setEtat_Demande("EnCours");
+        demandeIntervention.setVisibiliter(true);
+        Utilisateur utilisateur1=utilisateurRepository.findByUsername(username);
+        Utilisateur utilisateur2=demandeIntervention.getUtilisateurs();
+        utilisateurs.add(utilisateur1);
+        utilisateurs.add(utilisateur2);
+        Intervention intervention=new Intervention();
+        intervention.setDemandeIntervention(demandeIntervention);
+        Intervention intervention1=interventionRepository.save(intervention);
+        Espace espace=new Espace();
+
+        if (intervention1!=null){
+            espace.setIntervention(intervention1);
+            espace.setUtilisateurs(utilisateurs);
+            res=espaceRepository.save(espace);
+            intervention.setEspace(res);
+
+
+
+        }
+
+
+
+        System.out.println(res.getIntervention().getIdIntervention()+"intervention"+res.getIdEspace());
+
+        return res.getIdEspace();
+    }
 
     @Override
     public void DemandeRejeter(DemandeIntervention demandeIntervention) {
@@ -243,11 +281,14 @@ public class AccountServiceImp implements AccountService{
 
     @Override
     public Utilisateur AddRoles(String username, String rolename) {
-        Role role=rolesRepository.findByRoleName(rolename);
+       Role role=rolesRepository.findByRoleName(rolename);
         Utilisateur utilisateur=utilisateurRepository.findByUsername(username);
         utilisateur.getRoles().add(role);
 
         return utilisateur;
+
+
+
 
 
     }

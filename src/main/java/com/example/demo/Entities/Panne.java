@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.sun.xml.internal.messaging.saaj.packaging.mime.util.BASE64EncoderStream;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.File;
@@ -18,7 +15,11 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Data  @NoArgsConstructor  @AllArgsConstructor @ToString
+@Data
+
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
 public class Panne  implements Serializable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idPanne;

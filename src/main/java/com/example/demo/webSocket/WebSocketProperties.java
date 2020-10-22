@@ -1,9 +1,13 @@
 package com.example.demo.webSocket;
 
-import lombok.Data;
+import lombok.*;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+
 @ConfigurationProperties("app.websocket")
 public class WebSocketProperties {
     private String applicationPrefix = "/app";

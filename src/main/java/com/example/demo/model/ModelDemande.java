@@ -1,15 +1,11 @@
 package com.example.demo.model;
 
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.Blob;
+import lombok.*;
 
 
-@Data  @NoArgsConstructor  @AllArgsConstructor
+@Data
+@NoArgsConstructor  @AllArgsConstructor
 public class ModelDemande {
     private  String type;
     private String etat;

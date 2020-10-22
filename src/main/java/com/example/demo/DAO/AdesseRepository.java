@@ -14,5 +14,7 @@ import java.util.List;
 public interface AdesseRepository extends JpaRepository<Adresse,String> {
     @Query("select a.codeAdresse from Adresse a ")
     public List<String> CodeAdresses();
+    @Query("select ad from Adresse ad where ad.wilaye like:d and ad.commune like:y and ad.ville like:z and ad.rue like:w" )
+    public Adresse ChercherAdresse(@Param("d")String wilaye,@Param("y")String commune,@Param("z")String ville,@Param("w") String rue);
 
 }

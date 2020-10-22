@@ -13,6 +13,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,14 +27,13 @@ import java.nio.file.Paths;
 
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 @RestController
 @CrossOrigin(origins = "*")
-
-
 public class BasicRestController {
     @Autowired
     private DemandeRepository demandeRepository;
@@ -68,6 +68,7 @@ public class BasicRestController {
 
     @PostMapping("/addUser")
     public Utilisateur AjouterUtilisateur(@RequestBody ModelUser modelUser) {
+        System.out.println(modelUser.getRolename());
         String username = modelUser.getUsername();
         Utilisateur utilisateur = accountService.findUserByUser(username);
         if (utilisateur != null)
@@ -83,7 +84,24 @@ public class BasicRestController {
         user.setPassword(modelUser.getPassword());
         user.setEmail(modelUser.getEmail());
 
-        return accountService.addUser(user);
+        Utilisateur utilisateur1=accountService.addUser(user);
+        Role role=rolesRepository.findByRoleName(modelUser.getRolename());
+
+        List<Role>roles=new ArrayList<>();
+        roles.add(role);
+        if (roles!=null){
+            if (utilisateur1.getRoles()==null){
+                utilisateur1.setRoles(roles);
+
+            }
+            else {
+                utilisateur1.getRoles().add(role);
+            }
+        }
+
+
+
+        return accountService.AddRoles(utilisateur1.getUsername(),modelUser.getRolename());
     }
 
 
@@ -114,9 +132,11 @@ public class BasicRestController {
 
     @PostMapping("/affecterRole")
     public Utilisateur AffecterRole(@RequestBody ModelAffectationRole role) {
-
+/*
 
         return accountService.AddRoles(role.getUsername(), role.getRolename());
+        */
+        return  null;
     }
 
     @PostMapping("/addServiceIntervenant")
@@ -151,16 +171,23 @@ public class BasicRestController {
     public ResponseEntity<Agence> AddAgence(@RequestBody ModelAgence modelAgence) throws ResourceNotFoundException {
 
         System.out.println("nomAgence " + modelAgence.toString());
-        String codeAdresse = modelAgence.getCodeAdresse();
+
         Agence agence1 = new Agence();
 
-        Adresse adresse = adesseRepository.findById(codeAdresse).orElseThrow(() -> new RuntimeException("cette adresse n'Exist pas"));
+        Adresse adresse = (Adresse) adesseRepository.ChercherAdresse(modelAgence.getWilaye(),modelAgence.getCommune(),modelAgence.getVille(),modelAgence.getRue());
+
         if (adresse != null) {
             agence1.setNomAgence(modelAgence.getNomAgence());
             agence1.setAdresse(adresse);
             return ResponseEntity.ok().body(agenceRepository.save(agence1));
         }
-        return ResponseEntity.ok().body(agence1);
+        else{
+            agence1.setNomAgence(modelAgence.getNomAgence());
+            Adresse adresse1=new Adresse(null,modelAgence.getWilaye(),modelAgence.getCommune(),modelAgence.getVille(),modelAgence.getRue());
+            agence1.setAdresse(adresse1);
+
+        }
+         return ResponseEntity.ok().body(agenceRepository.save(agence1));
     }
 
     @GetMapping("/chercheByCodeAdresse/{code}")
@@ -259,8 +286,11 @@ public class BasicRestController {
     @GetMapping("/ChercherByidDemande/{id}")
     public DemandeIntervention ChercherByIdDemande(@PathVariable Long id) throws SQLException {
         DemandeIntervention demandeIntervention=demandeRepository.findById(id).get();
-        demandeIntervention.getPanne().setPhotos(decompressBytes(demandeIntervention.getPanne().getPhotos()));
-        return  demandeIntervention;
+        DemandeIntervention demandeIntervention1=null;
+        demandeIntervention1=demandeIntervention;
+        System.out.println(demandeIntervention1.getId_Demande());
+        demandeIntervention1.getPanne().setPhotos(decompressBytes(demandeIntervention.getPanne().getPhotos()));
+        return  demandeIntervention1;
     }
 
 
@@ -287,6 +317,15 @@ public class BasicRestController {
         demandeIntervention.setEtat_Demande("Rejeter");
         demandeIntervention.setVisibiliter(true);
         accountService.DemandeRejeter(demandeIntervention);
+    }
+    @GetMapping("/espace/{idDemande}/{username}")
+
+    public Long EspaceIdInterventionCreer1(@PathVariable Long idDemande,@PathVariable String username){
+        System.out.println(idDemande);
+        System.out.println(username);
+       Long id= accountService.CreerEspaceInter1(idDemande, username);
+         System.out.println(id);
+        return id;
     }
 
 

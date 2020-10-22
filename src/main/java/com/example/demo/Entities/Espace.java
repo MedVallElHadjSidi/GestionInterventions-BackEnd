@@ -1,25 +1,35 @@
 package com.example.demo.Entities;
 
+import com.example.demo.model.ModelMessage;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
-@Entity @Data @NoArgsConstructor @AllArgsConstructor @ToString
+@Entity
+@Data
+
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+
 public class Espace implements Serializable {
     @Id  @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Long idEspace;
-    private  String commentaire;
+    @Transient
+    private List<ModelMessage> commentaire;
+    @OneToOne
+    private  Intervention intervention;
+
+
     @ManyToMany
     @ToString.Exclude
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Collection<Utilisateur>utilisateurs;
-    @ManyToOne
-    @JoinColumn(name = "ID_Demande")
-    private  DemandeIntervention demandeIntervention;
+
+
+
 }
