@@ -7,6 +7,11 @@ import com.example.demo.model.ModelCategorie;
 import java.util.List;
 
 public interface AccountService {
+    public List<DemandeIntervention>DemandeUserResolu(String username);
+    public  List<DemandeIntervention>DemandeUserRejeter(String username);
+    public  Espace EspaceFermerInterventionResolu(Long id);
+    public  Espace EspaceFermerIntervention(Long id);
+    public  List<DemandeIntervention>DEMANDE_User_EnCours(String username);
     public  Long CreerEspaceInter1(Long id,String username);
     public void DemandeRejeter(DemandeIntervention demandeIntervention);
     public List<DemandeIntervention> NouveauxDemandes();

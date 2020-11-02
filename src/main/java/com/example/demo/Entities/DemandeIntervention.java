@@ -12,7 +12,6 @@ import java.util.List;
 
 @Entity
 @Data
-
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -35,9 +34,8 @@ public class DemandeIntervention implements Serializable {
 
     private Boolean visibiliter;
     @OneToMany(mappedBy = "demandeIntervention")
-    @ToString.Exclude
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private List<Intervention>interventions;
+    @JsonProperty(access = JsonProperty.Access.READ_WRITE)
+    private Collection<Intervention>interventions;
 
 
 }

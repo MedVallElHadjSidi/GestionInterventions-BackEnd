@@ -27,13 +27,13 @@ public class ServiceBMCI implements Serializable {
     private  String codeService;
     @Column(unique = true)
     private  String nom;
-    @JsonIgnore
+
     @OneToMany(mappedBy = "service")
     @ToString.Exclude
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Collection<Utilisateur>utilisateurs;
-    @JsonIgnore
+
     @OneToMany(mappedBy =  "service")
     @ToString.Exclude
     private  Collection<DemandeIntervention>demandeInterventions;

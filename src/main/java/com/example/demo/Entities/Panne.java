@@ -28,19 +28,19 @@ public class Panne  implements Serializable {
     private byte[] Photos;
     private String description;
     private  String imageString;
-
-
-
-
     @OneToMany(mappedBy = "panne")
     @ToString.Exclude
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 
-    private List<DemandeIntervention>demandeInterventions;
-
+    private Collection<DemandeIntervention>demandeInterventions;
     @ManyToMany()
+    @JoinTable( name = "T_Panne_Materiels",
+            joinColumns = @JoinColumn( name = "idPanne" ),
+            inverseJoinColumns = @JoinColumn( name = "idMateriel" ) )
+
     @ToString.Exclude
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+
     private Collection<Materiel>materiels;
     @ManyToOne
     private  Categorie categorie;

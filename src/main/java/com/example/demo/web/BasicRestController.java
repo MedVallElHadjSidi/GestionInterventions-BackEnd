@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.sql.rowset.serial.SerialBlob;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,12 +29,13 @@ import java.nio.file.Paths;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 @RestController
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*",allowedHeaders = "*")
 public class BasicRestController {
     @Autowired
     private DemandeRepository demandeRepository;
@@ -53,6 +55,8 @@ public class BasicRestController {
     private ServiceRepository serviceRepository;
     @Autowired
     private MaterielRepository materielRepository;
+    @Autowired
+    private  EspaceRepository espaceRepository;
 
     @PostMapping("/addMateriel")
     public Materiel AjouterMateriel(@RequestBody ModelMateriel materiel) {
@@ -269,12 +273,96 @@ public class BasicRestController {
     public int Notification() {
         return demandeRepository.NombreDeNouveauMessage();
     }
+    @GetMapping("/DemandeEncoursUser/{username}")
+    public  List<DemandeIntervention>DemandeUserEnCours(@PathVariable String username){
+        List<DemandeIntervention>demandeInterventions=accountService.DEMANDE_User_EnCours(username);
+        for(DemandeIntervention d:demandeInterventions){
+            System.out.println(d.getId_Demande()+"user"+d.getUtilisateurs().getUsername());
+        if(d.getInterventions().size()>0){
+            System.out.println("hello");
+        }
+        }
+        System.out.println(demandeInterventions.size());
+
+        return  accountService.DEMANDE_User_EnCours(username);
+    }
+
+    @GetMapping("/DemandeUserResolus/{username}")
+    public List<DemandeIntervention>DemandeUserResolu(@PathVariable String username){
+        List<DemandeIntervention>demandeInterventions=accountService.DemandeUserResolu(username);
+        for (DemandeIntervention d:demandeInterventions){
+        if(d.getInterventions().size()>0){
+            System.out.println("hello");
+        }}
+        return  demandeInterventions;
+    }
+    @GetMapping("/DemandeRejeterUser/{username}")
+    public List<DemandeIntervention>DemandeUserRejeter(@PathVariable String username){
+        return  accountService.DemandeUserRejeter(username);
+    }
+
+
+
+    @GetMapping("/EspaceDemande/{id}")
+    public Espace ChercherEspace(@PathVariable Long id){
+        Espace espace= (Espace) espaceRepository.findById(id).get();
+        
+        for(ModelMessage m:espace.getCommentaire()){
+            System.out.println("message de"+m.getNom()+"message content"+m.getMessage());
+            
+        }
+        System.out.println("espace"+espace.getIdEspace()+"size commentaie"+espace.getCommentaire().size());
+        
+        return espace;
+    }
+
+    
+    @GetMapping("/fermersansResolu/{id}")
+    public Espace FermerSansResolu(@PathVariable  Long id){
+        System.out.println("non resolu");
+     return   accountService.EspaceFermerIntervention(id);
+    }
+
+    @GetMapping("/EspaceFermerInterventionResolu/{id}")
+    public Espace EspaceFermerInterventionResolu(@PathVariable  Long id){
+        System.out.println("resolu");
+        return   accountService.EspaceFermerInterventionResolu(id);
+    }
+
+
+    @GetMapping("/DemandesEncours")
+    public List<DemandeIntervention> DemandesEncours() throws IOException,EOFException{
+        List<DemandeIntervention>demandeInterventions=demandeRepository.DemandeEnCours();
+
+       for(DemandeIntervention d:demandeInterventions){
+           System.out.println(d.getInterventions().size());
+            for (Intervention i:d.getInterventions()){
+                System.out.println("ID IN:"+i.getIdIntervention()+"Espace"+i.getEspace().getIdEspace());
+
+            for(ModelMessage o:i.getEspace().getCommentaire()){
+                System.out.println("message"+o +"envoyerpar"+o.getNom());
+            }
+
+            }
+       }
+
+
+       /* for(DemandeIntervention d:demandeInterventions){
+            System.out.println(d.getId_Demande());
+        }*/
+
+
+        return demandeInterventions ;
+    }
 
     @GetMapping("/NouveauxDemandes")
     public List<DemandeIntervention> NouveauDemandes()   {
         List<DemandeIntervention>demandeInterventions=accountService.NouveauxDemandes();
         for(DemandeIntervention d:demandeInterventions){
             System.out.println(d.getId_Demande());
+            for(Intervention i:d.getInterventions()){
+                System.out.println("id inter"+i.getIdIntervention());
+            }
         }
 
 

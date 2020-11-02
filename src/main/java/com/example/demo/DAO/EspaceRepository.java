@@ -7,4 +7,5 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 public interface EspaceRepository extends JpaRepository<Espace,Long> {
 
+
 }

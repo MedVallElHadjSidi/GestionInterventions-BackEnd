@@ -1,6 +1,8 @@
 package com.example.demo.Entities;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.persistence.*;
@@ -22,7 +24,10 @@ public class Intervention implements Serializable  {
     
     @OneToOne
     private  Espace espace;
+
     @ManyToOne
+    @JoinColumn(name = "Demande_ID")
+    @JsonIgnore
     private  DemandeIntervention demandeIntervention;
 
 

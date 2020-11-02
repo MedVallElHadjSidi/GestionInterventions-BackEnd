@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 
 public class AccountServiceImp implements AccountService{
     @Autowired
@@ -41,6 +42,51 @@ public class AccountServiceImp implements AccountService{
     private  InterventionRepository interventionRepository;
 
     @Override
+    public List<DemandeIntervention> DemandeUserResolu(String username) {
+        return demandeRepository.DemandeUsersResolu(username);
+    }
+
+    @Override
+    public List<DemandeIntervention> DemandeUserRejeter(String username) {
+        return demandeRepository.DemandeUsersRejeter(username);
+    }
+
+    @Override
+    public Espace EspaceFermerInterventionResolu(Long id) {
+        Espace espace=espaceRepository.findById(id).get();
+        espace.setEtatEspace("Fermer");
+        System.out.println("id interventions"+espace.getIntervention().getIdIntervention());
+        Intervention intervention=espace.getIntervention();
+        if (intervention!=null){
+            System.out.println("Resolu");
+            intervention.setEtatIntervention("Resolu");
+            intervention.getDemandeIntervention().setEtat_Demande("Fermer");
+        }
+        return  espace;
+    }
+
+    @Override
+    public Espace EspaceFermerIntervention(Long id) {
+        Espace espace=espaceRepository.findById(id).get();
+        espace.setEtatEspace("Fermer");
+        System.out.println("id interventions"+espace.getIntervention().getIdIntervention());
+        Intervention intervention=espace.getIntervention();
+        if (intervention!=null){
+            System.out.println("non Resolu");
+            intervention.setEtatIntervention("Non Resolu");
+        }
+        return  espace;
+
+
+    }
+
+    @Override
+    public List<DemandeIntervention> DEMANDE_User_EnCours(String username) {
+
+        return demandeRepository.DemandeUsersEnCours(username);
+    }
+
+    @Override
     public Long CreerEspaceInter1(Long id, String username) {
         Espace res=new Espace();
         List<Utilisateur>utilisateurs=new ArrayList<>();
@@ -54,15 +100,18 @@ public class AccountServiceImp implements AccountService{
         Intervention intervention=new Intervention();
         intervention.setDemandeIntervention(demandeIntervention);
         Intervention intervention1=interventionRepository.save(intervention);
+        demandeIntervention.getInterventions().add(intervention1);
+        demandeRepository.save(demandeIntervention);
+
+
         Espace espace=new Espace();
 
         if (intervention1!=null){
             espace.setIntervention(intervention1);
             espace.setUtilisateurs(utilisateurs);
             res=espaceRepository.save(espace);
-            intervention.setEspace(res);
-
-
+            intervention1.setEspace(res);
+            demandeIntervention.getInterventions().add(intervention1);
 
         }
 

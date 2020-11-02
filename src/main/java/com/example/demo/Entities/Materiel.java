@@ -22,6 +22,10 @@ public class Materiel implements Serializable {
     private  String model;
     private  String processeur;
     @ManyToMany()
+    @JoinTable( name = "T_Panne_Materiels",
+            joinColumns = @JoinColumn( name = "idMateriel" ),
+            inverseJoinColumns = @JoinColumn( name = "idPanne" ) )
+
     @ToString.Exclude
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Collection<Panne>pannes;

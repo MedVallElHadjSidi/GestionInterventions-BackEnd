@@ -25,25 +25,24 @@ public  class Utilisateur implements Serializable {
     private String password;
     @ManyToMany(fetch = FetchType.EAGER)
     private Collection<Role> roles;
-
     @ManyToOne
     @JoinColumn(name = "Agence")
     private  Agence agence;
 
-    @JsonIgnore
     @OneToMany(mappedBy = "utilisateurs")
     @ToString.Exclude
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Collection<DemandeIntervention>demandeInterventions;
-
     @ManyToOne
     @JoinColumn(name = "Service_ID")
-
     private ServiceBMCI service;
-    @JsonIgnore
+
     @ManyToMany
-
-
+    @ToString.Exclude
+    @JoinTable( name = "T_Users_Espace_Associations",
+            joinColumns = @JoinColumn( name = "code" ),
+            inverseJoinColumns = @JoinColumn( name = "idEspace" ) )
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private  Collection<Espace>espaces;
 
 

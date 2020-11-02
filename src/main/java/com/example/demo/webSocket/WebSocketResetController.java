@@ -249,31 +249,98 @@ return  demandeInterventionsNonVue;
 
 
 
+    @PostMapping  (value = "/interventionsimple")
 
+    @ResponseBody
+    public ModelMessage sendMeesageversEspace(@RequestBody  EnvoyerMessage message) throws IOException, SQLException ,EOFException{
 
-
-    @MessageExceptionHandler()
-    @MessageMapping("/interventionsimple")
-    public  ModelMessage InterventionSimple(EnvoyerMessage message){
         ModelMessage modelMessage=new ModelMessage();
+        LinkedList<ModelMessage>modelMessageLinkedList=new LinkedList<ModelMessage>();
         System.out.println(message);
         Espace espace=espaceRepository.findById(message.getIdespace()).get();
+        //  espace.getIntervention().getDemandeIntervention().getInterventions();
+
         System.out.println("votre espace"+espace.getIdEspace());
-        List<ModelMessage>modelMessages=new ArrayList<>();
+        // List<ModelMessage>modelMessages=new ArrayList<>();
         List<Utilisateur>utilisateurs= new ArrayList<>();
         if (espace!=null){
             utilisateurs= (List<Utilisateur>) espace.getUtilisateurs();
             modelMessage.setNom(message.getUsername());
             modelMessage.setMessage(message.getMessage());
             modelMessage.setDate(new Date());
-            modelMessages.add(modelMessage);
-            System.out.println();
+            // modelMessages.add(modelMessage);
+            modelMessageLinkedList.add(modelMessage);
+            System.out.println(modelMessageLinkedList.size());
             if (espace.getCommentaire()==null) {
-                espace.setCommentaire(modelMessages);
+                System.out.println("commentaire vide");
+                espace.setCommentaire(modelMessageLinkedList);
+                System.out.println("size listCommentaire"+espace.getCommentaire().size());
+                for(ModelMessage m:espace.getCommentaire()){
+                    System.out.println("message"+m.getMessage()+"envoyerpar"+m.getNom());
+                }
 
                 //      espace.setCommentaire((LinkedList<ModelMessage>) modelMessages);
-                espaceRepository.save(espace);
+              //  Espace espace1=   espaceRepository.save(espace);
                 for (Utilisateur u:espace.getUtilisateurs()){
+                    this.template.convertAndSend("/topic/espace"+"/"+u.getUsername(),modelMessage);
+                }
+
+
+            }
+            else {
+                espace.getCommentaire().add(modelMessage);
+             //   espaceRepository.save(espace);
+                for (Utilisateur u:espace.getUtilisateurs()){
+                    this.template.convertAndSend("/topic/espace"+"/"+u.getUsername(),modelMessage);
+                }
+
+            }
+
+
+
+        }
+
+
+        return  modelMessage;
+    }
+
+
+
+
+
+        @MessageExceptionHandler()
+    @MessageMapping("/interventionsimple")
+    public  ModelMessage InterventionSimple(EnvoyerMessage message){
+        ModelMessage modelMessage=new ModelMessage();
+        LinkedList<ModelMessage>modelMessageLinkedList=new LinkedList<ModelMessage>();
+        System.out.println(message);
+        Espace espace=espaceRepository.findById(message.getIdespace()).get();
+        for(ModelMessage m:espace.getCommentaire()){
+
+            System.out.println(m.getMessage());
+        }
+        System.out.println("votre espace"+espace.getIdEspace());
+       // List<ModelMessage>modelMessages=new ArrayList<>();
+        List<Utilisateur>utilisateurs= new ArrayList<>();
+        if (espace!=null){
+            utilisateurs= (List<Utilisateur>) espace.getUtilisateurs();
+            modelMessage.setNom(message.getUsername());
+            modelMessage.setMessage(message.getMessage());
+            modelMessage.setDate(new Date());
+           // modelMessages.add(modelMessage);
+            modelMessageLinkedList.add(modelMessage);
+            System.out.println(modelMessageLinkedList.size());
+            if (espace.getCommentaire()==null) {
+                System.out.println("commentaire vide");
+                espace.setCommentaire(modelMessageLinkedList);
+                System.out.println("size listCommentaire"+espace.getCommentaire().size());
+                for(ModelMessage m:espace.getCommentaire()){
+                    System.out.println("message"+m.getMessage()+"envoyerpar"+m.getNom());
+                }
+
+                //      espace.setCommentaire((LinkedList<ModelMessage>) modelMessages);
+             Espace espace1=   espaceRepository.save(espace);
+                for (Utilisateur u:espace1.getUtilisateurs()){
                     this.template.convertAndSend("/topic/espace"+"/"+u.getUsername(),modelMessage);
                 }
 
@@ -298,7 +365,9 @@ return  demandeInterventionsNonVue;
     }
 
 
+   /*
     @PostMapping  (value = "/interventionsimple")
+
     @ResponseBody
     public ModelMessage sendMeesageversEspace(@RequestBody  EnvoyerMessage envoyerMessage) throws IOException, SQLException {
 
@@ -317,7 +386,7 @@ return  demandeInterventionsNonVue;
             modelMessages.add(modelMessage);
             System.out.println();
             if (espace.getCommentaire()==null) {
-                espace.setCommentaire(modelMessages);
+                espace.setCommentaire((LinkedList<ModelMessage>) modelMessages);
 
 
           //      espace.setCommentaire((LinkedList<ModelMessage>) modelMessages);
@@ -350,7 +419,7 @@ return  demandeInterventionsNonVue;
 
 
 
-
+*/
 
 
 
