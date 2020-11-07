@@ -12,7 +12,7 @@ import java.util.Collection;
 @Entity
 
 @Data
-@NoArgsConstructor
+
 @AllArgsConstructor
 @ToString
 public  class Utilisateur implements Serializable {
@@ -23,6 +23,7 @@ public  class Utilisateur implements Serializable {
     @Column(unique = true)
     private String username;
     private String password;
+    private String etat;
     @ManyToMany(fetch = FetchType.EAGER)
     private Collection<Role> roles;
     @ManyToOne
@@ -44,6 +45,10 @@ public  class Utilisateur implements Serializable {
             inverseJoinColumns = @JoinColumn( name = "idEspace" ) )
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private  Collection<Espace>espaces;
+
+    public Utilisateur(){
+        this.etat="Active";
+    }
 
 
 

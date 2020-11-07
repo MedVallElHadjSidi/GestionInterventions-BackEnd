@@ -58,7 +58,7 @@ public class GestionInterventionsApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 /*
-		Utilisateur utilisateur=accountService.addUser(new Utilisateur("adm1","MedVall","MedVall@gmail.com","admin","1234",null,null,null,null,null));
+		Utilisateur utilisateur=accountService.addUser(new Utilisateur("adm1","MedVall","MedVall@gmail.com","admin","1234","Active",null,null,null,null,null));
 		Role role =rolesRepository.save(new Role(null,"ADMIN"));
 		accountService.AddRoles("admin","ADMIN");
 /*

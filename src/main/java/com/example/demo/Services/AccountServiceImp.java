@@ -4,6 +4,9 @@ import com.example.demo.DAO.*;
 import com.example.demo.Entities.*;
 import com.example.demo.model.ModelCategorie;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import org.springframework.stereotype.Service;
@@ -42,6 +45,102 @@ public class AccountServiceImp implements AccountService{
     private  InterventionRepository interventionRepository;
 
     @Override
+    public int NombreInterventionEncours() {
+        return 4;
+    }
+
+    @Override
+    public int NombreInterventionResolu() {
+        return 40;
+    }
+
+    @Override
+    public int NombreInterventionNonResolu() {
+        return 20;
+    }
+
+    @Override
+    public Utilisateur UtilisateurEnMission(String username) {
+
+        Role r=rolesRepository.findByRoleName("INTERVENANT");
+        Utilisateur utilisateur=utilisateurRepository.findByUsername(username);
+        if(utilisateur.getRoles().contains(r)){
+            utilisateur.setEtat("EnMission");
+        }
+
+
+        return utilisateur;
+    }
+
+    @Override
+    public List<String> IntervenantServiceLibre() {
+        List<String>intervenantLibreNames=new ArrayList<>();
+        Role r=rolesRepository.findByRoleName("INTERVENANT");
+        List<Utilisateur>utilisateurs=utilisateurRepository.IntervenantNameAvecService();
+        for (Utilisateur u:utilisateurs){
+            if(u.getRoles().contains(r)){
+
+                    intervenantLibreNames.add(u.getUsername());
+
+            }
+        }
+        System.out.println("les intervevabts libres:"+intervenantLibreNames.size());
+        return intervenantLibreNames;
+    }
+
+    @Override
+    public List<DemandeIntervention> DemandeAsoocierIntervenantEnCours(String username) {
+        System.out.println("intervenant :"+username);
+        Utilisateur utilisateur=utilisateurRepository.findByUsername(username);
+        List<DemandeIntervention>demandeInterventions=new ArrayList<>();
+        List<Intervention>interventions=interventionRepository.findAll();
+        System.out.println("interventions Associer a tous"+interventions.size());
+        Role role=rolesRepository.findByRoleName("INTERVENANT");
+
+        if(utilisateur!=null && interventions.size()>0){
+            if(utilisateur.getRoles().contains(role)==true){
+                System.out.println("resultat"+utilisateur.getRoles().contains(role));
+                for (Intervention i:interventions){
+                    if (i.getEspace().getUtilisateurs().contains(utilisateur)==true){
+                        if (i.getDemandeIntervention().getEtat_Demande().equals("EnCours")&&utilisateur.getEtat().equals("EnMission"))
+                            demandeInterventions.add(i.getDemandeIntervention());
+
+                    }
+                }
+            }
+        }
+
+
+        return demandeInterventions;
+    }
+
+    @Override
+    public List<DemandeIntervention> DemandeAsoocierIntervenant(String username) {
+        System.out.println("intervenant :"+username);
+        Utilisateur utilisateur=utilisateurRepository.findByUsername(username);
+        List<DemandeIntervention>demandeInterventions=new ArrayList<>();
+        List<Intervention>interventions=interventionRepository.findAll();
+        System.out.println("interventions Associer a tous"+interventions.size());
+        Role role=rolesRepository.findByRoleName("INTERVENANT");
+
+        if(utilisateur!=null && interventions.size()>0){
+           if(utilisateur.getRoles().contains(role)==true){
+               System.out.println("resultat"+utilisateur.getRoles().contains(role));
+               for (Intervention i:interventions){
+                   if (i.getEspace().getUtilisateurs().contains(utilisateur)==true){
+                       if (i.getDemandeIntervention().getEtat_Demande().equals("EnCours")&&utilisateur.getEtat().equals("Occuper"))
+                       demandeInterventions.add(i.getDemandeIntervention());
+
+                   }
+               }
+           }
+        }
+
+
+        return demandeInterventions;
+    }
+
+    @Override
     public List<DemandeIntervention> DemandeUserResolu(String username) {
         return demandeRepository.DemandeUsersResolu(username);
     }
@@ -54,6 +153,7 @@ public class AccountServiceImp implements AccountService{
     @Override
     public Espace EspaceFermerInterventionResolu(Long id) {
         Espace espace=espaceRepository.findById(id).get();
+        Role role=rolesRepository.findByRoleName("INTERVENANT");
         espace.setEtatEspace("Fermer");
         System.out.println("id interventions"+espace.getIntervention().getIdIntervention());
         Intervention intervention=espace.getIntervention();
@@ -61,6 +161,13 @@ public class AccountServiceImp implements AccountService{
             System.out.println("Resolu");
             intervention.setEtatIntervention("Resolu");
             intervention.getDemandeIntervention().setEtat_Demande("Fermer");
+
+           for (Utilisateur u:espace.getUtilisateurs()){
+               if (u.getRoles().contains(role)){
+                   u.setEtat("Active");
+               }
+            }
+
         }
         return  espace;
     }
@@ -74,6 +181,13 @@ public class AccountServiceImp implements AccountService{
         if (intervention!=null){
             System.out.println("non Resolu");
             intervention.setEtatIntervention("Non Resolu");
+            Role role=rolesRepository.findByRoleName("INTERVENANT");
+
+            for (Utilisateur u:espace.getUtilisateurs()){
+                if (u.getRoles().contains(role)){
+                    u.setEtat("Active");
+                }
+            }
         }
         return  espace;
 
@@ -81,10 +195,14 @@ public class AccountServiceImp implements AccountService{
     }
 
     @Override
-    public List<DemandeIntervention> DEMANDE_User_EnCours(String username) {
+    public Page<DemandeIntervention> DEMANDE_User_EnCours(int page, String username) {
 
-        return demandeRepository.DemandeUsersEnCours(username);
+        Pageable requestedPage = PageRequest.of(page, 5);
+
+
+        return demandeRepository.DemandeUsersEnCours(username, requestedPage);
     }
+
 
     @Override
     public Long CreerEspaceInter1(Long id, String username) {
@@ -103,7 +221,6 @@ public class AccountServiceImp implements AccountService{
         demandeIntervention.getInterventions().add(intervention1);
         demandeRepository.save(demandeIntervention);
 
-
         Espace espace=new Espace();
 
         if (intervention1!=null){
@@ -112,14 +229,50 @@ public class AccountServiceImp implements AccountService{
             res=espaceRepository.save(espace);
             intervention1.setEspace(res);
             demandeIntervention.getInterventions().add(intervention1);
-
         }
-
-
 
         System.out.println(res.getIntervention().getIdIntervention()+"intervention"+res.getIdEspace());
 
         return res.getIdEspace();
+    }
+
+    @Override
+    public Long CreerEspaceInter2(Long id, String intervenant, String respo) {
+
+
+        Espace res=new Espace();
+        List<Utilisateur>utilisateurs=new ArrayList<>();
+        DemandeIntervention demandeIntervention=demandeRepository.findById(id).get();
+        demandeIntervention.setEtat_Demande("EnCours");
+        demandeIntervention.setVisibiliter(true);
+        Utilisateur utilisateur1=utilisateurRepository.findByUsername(intervenant);
+        Utilisateur utilisateur2=demandeIntervention.getUtilisateurs();
+        Utilisateur utilisateur3=utilisateurRepository.findByUsername(respo);
+
+        utilisateurs.add(utilisateur1);
+        utilisateurs.add(utilisateur2);
+        utilisateurs.add(utilisateur3);
+
+        Intervention intervention=new Intervention();
+        intervention.setDemandeIntervention(demandeIntervention);
+        Intervention intervention1=interventionRepository.save(intervention);
+        demandeIntervention.getInterventions().add(intervention1);
+        demandeRepository.save(demandeIntervention);
+        utilisateur1.setEtat("Occuper");
+
+        Espace espace=new Espace();
+
+        if (intervention1!=null){
+            espace.setIntervention(intervention1);
+            espace.setUtilisateurs(utilisateurs);
+            System.out.println(espace.getUtilisateurs().size());
+            res=espaceRepository.save(espace);
+            intervention1.setEspace(res);
+            demandeIntervention.getInterventions().add(intervention1);
+        }
+        System.out.println(res.getIntervention().getIdIntervention()+"intervention"+res.getIdEspace());
+
+        return intervention1.getIdIntervention();
     }
 
     @Override

@@ -8,6 +8,8 @@ import com.example.demo.model.*;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 
 import org.springframework.http.MediaType;
@@ -273,18 +275,18 @@ public class BasicRestController {
     public int Notification() {
         return demandeRepository.NombreDeNouveauMessage();
     }
-    @GetMapping("/DemandeEncoursUser/{username}")
-    public  List<DemandeIntervention>DemandeUserEnCours(@PathVariable String username){
-        List<DemandeIntervention>demandeInterventions=accountService.DEMANDE_User_EnCours(username);
-        for(DemandeIntervention d:demandeInterventions){
+    @GetMapping("/DemandeEncoursUser/{page}/{username}")
+    public  Page<DemandeIntervention>DemandeUserEnCours(@PathVariable int page,@PathVariable String username){
+       Page<DemandeIntervention> demandeInterventions=accountService.DEMANDE_User_EnCours(page,username);
+        for(DemandeIntervention d:demandeInterventions.getContent()){
             System.out.println(d.getId_Demande()+"user"+d.getUtilisateurs().getUsername());
         if(d.getInterventions().size()>0){
             System.out.println("hello");
         }
         }
-        System.out.println(demandeInterventions.size());
+        System.out.println(demandeInterventions.getTotalPages());
 
-        return  accountService.DEMANDE_User_EnCours(username);
+        return  demandeInterventions;
     }
 
     @GetMapping("/DemandeUserResolus/{username}")
@@ -415,10 +417,65 @@ public class BasicRestController {
          System.out.println(id);
         return id;
     }
+    @GetMapping("/intervenantsNamesLibres")
+    public  List<String>IntervenantNamesLibres(){
+        return  accountService.IntervenantServiceLibre();
+
+    }
 
 
+    @PostMapping("/interventionComplex")
+    public Long InterventionComplexe(@RequestBody ModelDemandeIntervenant demandeIntervenant){
+        Long idDemande=demandeIntervenant.getIdDemande();
+        String intervenant=demandeIntervenant.getIntervenant();
+        String respo=demandeIntervenant.getRespo();
+        System.out.println(idDemande);
+        System.out.println(intervenant);
+        System.out.println(respo);
+        Long id= accountService.CreerEspaceInter2(idDemande,intervenant,respo);
+        System.out.println(id);
+        return id;
+    }
+    @GetMapping("/DemandeAsoocierIntervenant/{username}")
+    public List<DemandeIntervention> DemandeAsoocierIntervenant(@PathVariable String username)
+    {
+        List<DemandeIntervention>demandeInterventions=accountService.DemandeAsoocierIntervenant(username);
+        System.out.println(demandeInterventions.size());
+        return demandeInterventions;
+    }
+    @GetMapping("/DemandeAsoocierIntervenantEncours/{username}")
+    public List<DemandeIntervention> DemandeAsoocierIntervenantEncours(@PathVariable String username)
+    {
+        List<DemandeIntervention>demandeInterventions=accountService.DemandeAsoocierIntervenantEnCours(username);
+        System.out.println(demandeInterventions.size());
+        for(DemandeIntervention d:demandeInterventions){
+            System.out.println(d.getId_Demande()+"user"+d.getUtilisateurs().getUsername());
+            if(d.getInterventions().size()>0){
+                System.out.println("hello intervenant");
+            }
+        }
+
+        return demandeInterventions;
+    }
 
 
+    @GetMapping("/ChangerEtatIntervenant/{username}")
+    public  Utilisateur ChangerEtatIntervenant(@PathVariable String username){
+        return  accountService.UtilisateurEnMission(username);
+    }
+    @GetMapping("/NombreInterventionResolu")
+    public int NombreInterventionResolu(){
+        return  accountService.NombreInterventionResolu();
+    }
+    @GetMapping("/NombreInterventionNonResolu")
+    public  int NombreInterventionNonResolu(){
+        return  accountService.NombreInterventionNonResolu();
+    }
+    @GetMapping("/NombreInterventionEncours")
+    public  int NombreInterventionEncours(){
+
+        return  accountService.NombreInterventionEncours();
+    }
 
 }
 

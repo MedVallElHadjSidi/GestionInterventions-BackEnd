@@ -29,7 +29,6 @@ public class Agence  implements Serializable {
     @ToString.Exclude
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Collection<Materiel>materiels;
-
     public  Agence(String nomAgence,Adresse adresse){
         this.nomAgence=nomAgence;
         this.adresse =adresse;

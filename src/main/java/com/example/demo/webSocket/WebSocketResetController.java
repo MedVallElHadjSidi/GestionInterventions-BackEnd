@@ -9,6 +9,7 @@ import com.example.demo.model.ModelDemande;
 
 
 import com.example.demo.model.ModelMessage;
+import com.example.demo.model.NotificationIntervenant;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
@@ -41,6 +42,8 @@ public class WebSocketResetController {
 
     @Autowired
     private  EspaceRepository espaceRepository;
+    @Autowired
+    private  InterventionRepository interventionRepository;
 
     @Autowired
     private MaterielRepository materielRepository;
@@ -243,10 +246,8 @@ return  demandeInterventionsNonVue;
         } catch (IOException e) {
         }
         System.out.println("Compressed Image Byte Size - " + outputStream.toByteArray().length);
-
         return outputStream.toByteArray();
     }
-
 
 
     @PostMapping  (value = "/interventionsimple")
@@ -285,7 +286,6 @@ return  demandeInterventionsNonVue;
                     this.template.convertAndSend("/topic/espace"+"/"+u.getUsername(),modelMessage);
                 }
 
-
             }
             else {
                 espace.getCommentaire().add(modelMessage);
@@ -293,11 +293,7 @@ return  demandeInterventionsNonVue;
                 for (Utilisateur u:espace.getUtilisateurs()){
                     this.template.convertAndSend("/topic/espace"+"/"+u.getUsername(),modelMessage);
                 }
-
             }
-
-
-
         }
 
 
@@ -306,8 +302,21 @@ return  demandeInterventionsNonVue;
 
 
 
+    @MessageExceptionHandler()
+    @MessageMapping("/interventionComplexe")
+    public  DemandeIntervention InterventionSimple(@RequestBody NotificationIntervenant notificationIntervenant){
+        System.out.println(notificationIntervenant.getIdIntervention()+""+notificationIntervenant.getIntervenant());
+        Utilisateur utilisateur=utilisateurRepository.findByUsername(notificationIntervenant.getIntervenant());
+        Intervention  intervention=interventionRepository.findById(notificationIntervenant.getIdIntervention()).get();
+        if (intervention!=null){
+            System.out.println("intervention:"+intervention.getIdIntervention());
+            if (intervention.getEspace().getUtilisateurs().contains(utilisateur)){
+                this.template.convertAndSend("/topic/intervenant"+"/"+utilisateur.getUsername(),intervention.getDemandeIntervention());
 
+            }
+        }
 
+        return intervention.getDemandeIntervention(); }
         @MessageExceptionHandler()
     @MessageMapping("/interventionsimple")
     public  ModelMessage InterventionSimple(EnvoyerMessage message){

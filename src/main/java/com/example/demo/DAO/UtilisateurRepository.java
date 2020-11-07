@@ -14,7 +14,8 @@ public interface UtilisateurRepository  extends JpaRepository<Utilisateur,String
     @Query("select distinct us from Utilisateur us where us.username like:x")
     public Utilisateur findByUserNameInter(@Param("x")String username);
 
-
+    @Query("select DISTINCT  ut from Utilisateur ut,ServiceBMCI sr where ut.service.codeService=sr.codeService and ut.etat='Active' and sr.nom='Informatique'")
+    public List<Utilisateur>IntervenantNameAvecService();
 
     @Query("select distinct u from Utilisateur u")
     public List<Utilisateur> UserNamesSansRoles();
