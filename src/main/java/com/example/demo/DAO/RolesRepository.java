@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface RolesRepository extends JpaRepository<Role,String> {
+public interface RolesRepository extends JpaRepository<Role,Long> {
     public  Role  findByRoleName(String code);
     @Query("select r.roleName from Role r ")
     public List<String> RolesName();

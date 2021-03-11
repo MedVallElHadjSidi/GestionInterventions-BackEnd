@@ -24,6 +24,8 @@ public  class Utilisateur implements Serializable {
     private String username;
     private String password;
     private String etat;
+    private int nbritv;
+ 
     @ManyToMany(fetch = FetchType.EAGER)
     private Collection<Role> roles;
     @ManyToOne
@@ -37,7 +39,7 @@ public  class Utilisateur implements Serializable {
     @ManyToOne
     @JoinColumn(name = "Service_ID")
     private ServiceBMCI service;
-
+/*
     @ManyToMany
     @ToString.Exclude
     @JoinTable( name = "T_Users_Espace_Associations",
@@ -45,9 +47,13 @@ public  class Utilisateur implements Serializable {
             inverseJoinColumns = @JoinColumn( name = "idEspace" ) )
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private  Collection<Espace>espaces;
+    */
+
 
     public Utilisateur(){
         this.etat="Active";
+        this.nbritv=0;
+  
     }
 
 

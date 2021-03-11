@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
+
 public interface AgenceRepository extends JpaRepository<Agence,Long> {
     public  Agence findByNomAgence(String nomagence);
     @Query("select ag.nomAgence from Agence ag ")

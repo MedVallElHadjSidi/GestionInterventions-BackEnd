@@ -6,8 +6,7 @@ import com.example.demo.Entities.*;
 import com.example.demo.Services.AccountService;
 import com.example.demo.model.EnvoyerMessage;
 import com.example.demo.model.ModelDemande;
-
-
+import com.example.demo.model.ModelEditDemande;
 import com.example.demo.model.ModelMessage;
 import com.example.demo.model.NotificationIntervenant;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +58,8 @@ public class WebSocketResetController {
     private AccountService accountService;
     @Autowired
     private  UtilisateurRepository utilisateurRepository;
+    @Autowired
+    private MaterielPanneRepository materielPanneRepository;
 
 
     private final SimpMessagingTemplate template;
@@ -69,16 +70,93 @@ public class WebSocketResetController {
     }
     @PostMapping  (value = "/envoyer")
     @ResponseBody
-    public int sendReset(@RequestBody  ModelDemande message) throws IOException, SQLException {
+    public DemandeIntervention sendReset(@RequestBody  ModelDemande message) throws IOException, SQLException {
 
 
-        int count=0;
-      // System.out.println(message.getImage().length());
+        int count = 0;
+
+
+        int i = 0;
+        Long envoyer = null;
+        DemandeIntervention demandeInterventionsNonVue = new DemandeIntervention();
+
+        System.out.println(message.getImage().length());
         /*
         byte[] bdata = message.getImage().getBytes(1, (int)message.getImage().length());
         String data1 = new String(bdata);
         */
-     //System.out.println(file.getOriginalFilename());
+        //System.out.println(file.getOriginalFilename());
+      /*  byte[]bdata= message.getImage().getBytes();
+        System.out.println(bdata.length);
+        Blob b = new SerialBlob(bdata);*/
+        if (message.getImage().getBytes().length > 1048576) {
+            System.out.print("gros image");
+            return null;
+
+        } else {
+
+
+            DemandeIntervention demandeIntervention = new DemandeIntervention();
+
+            String userDemande = message.getUserDemander();
+            System.out.println(userDemande);
+            String typePanne = message.getType();
+            String materiel = message.getMateriel();
+            System.out.println(materiel);
+            String service = message.getService();
+
+        /* byte[] encodeBase64Byte = Base64.encodeBase64(message.getImage().getBytes());
+        Blob b = new SerialBlob(encodeBase64Byte);
+        */
+
+            Panne panne = new Panne();
+            ServiceBMCI serviceBMCI = serviceRepository.findByNom(service);
+            Materiel materiel1 = materielRepository.findByNom(materiel);
+            Utilisateur utilisateur = utilisateurRepository.findByUsername(userDemande);
+            Categorie categorie = categorieRepository.findByNom(typePanne);
+            panne.setCategorie(categorie);
+            panne.setEtatPanne(message.getEtat());
+            panne.setDescription(message.getDescription());
+            panne.setPhotos(compressBytes(message.getImage().getBytes()));
+
+
+            Panne panne1 = panneRepository.save(panne);
+            Materiel_Panne materiel_Panne=new Materiel_Panne();
+
+            materiel_Panne.setMateriel(materiel1);
+            materiel_Panne.setPanne(panne1);
+            
+            materielPanneRepository.save(materiel_Panne);
+
+
+            if (message != null) {
+
+
+                demandeIntervention.setPanne(panne1);
+                demandeIntervention.setVisibiliter(false);
+                demandeIntervention.setService(serviceBMCI);
+                demandeIntervention.setUtilisateurs(utilisateur);
+                Utilisateur utilisateur1 = accountService.ServiceRespo(message.getService());
+                String username = utilisateur1.getUsername();
+                demandeInterventionsNonVue = demandeRepository.save(demandeIntervention);
+
+                // count=demandeRepository.NombreDeNouveauMessage();
+                envoyer = demandeInterventionsNonVue.getId_Demande();
+                System.out.println(envoyer);
+
+
+                this.template.convertAndSend("/topic/replay" + "/" + username, demandeInterventionsNonVue);
+
+            }
+
+
+            return demandeInterventionsNonVue;
+            // System.out.println(message.getImage().length());
+        /*
+        byte[] bdata = message.getImage().getBytes(1, (int)message.getImage().length());
+        String data1 = new String(bdata);
+        */
+            //System.out.println(file.getOriginalFilename());
       /*  byte[]bdata= message.getImage().getBytes();
         System.out.println(bdata.length);
         Blob b = new SerialBlob(bdata);*/
@@ -140,17 +218,18 @@ public class WebSocketResetController {
 
             this.template.convertAndSend("/topic/replay"+"/"+username,count);
 
-        }*/
-return count;
+        }
+return count;*/
+
+        }
 
     }
-
-
     @MessageExceptionHandler()
     @MessageMapping("/hello")
 
-    public DemandeIntervention sendMessage(@RequestBody ModelDemande message ) throws IOException {
+    public Long sendMessage(@RequestBody ModelDemande message ) throws IOException {
         int i=0;
+        Long envoyer=null;
         DemandeIntervention demandeInterventionsNonVue=new DemandeIntervention();
 
         System.out.println(message.getImage().length());
@@ -190,23 +269,20 @@ return count;
 
         Panne panne1=panneRepository.save(panne);
         List<Materiel>materielList=new ArrayList<>();
-        if (panne1.getMateriels()==null){
-            materielList.add(materiel1);
-            panne1.setMateriels(materielList);
+        Materiel_Panne materiel_Panne=new Materiel_Panne();
 
-
-
-        }
-        else {
-            panne1.getMateriels().add(materiel1);
-
-        }
+        
+        
+       Materiel_Panne m1= materielPanneRepository.save(new Materiel_Panne(null,panne1,materiel1));
+       materiel1.getMateriel_Pannes().add(m1);
+       panne1.getMateriel_Pannes().add(m1);
+       
+     
 
 
         if (message != null) {
 
-            demandeIntervention.setDate_Demande(new Date());
-            demandeIntervention.setEtat_Demande("initiale");
+
             demandeIntervention.setPanne(panne1);
             demandeIntervention.setVisibiliter(false);
             demandeIntervention.setService(serviceBMCI);
@@ -216,16 +292,18 @@ return count;
             demandeInterventionsNonVue=demandeRepository.save(demandeIntervention);
 
            // count=demandeRepository.NombreDeNouveauMessage();
+             envoyer=demandeInterventionsNonVue.getId_Demande();
+            System.out.println(envoyer);
 
 
-            this.template.convertAndSend("/topic/replay"+"/"+username,demandeInterventionsNonVue);
+            this.template.convertAndSend("/topic/replay"+"/"+username,envoyer);
 
         }
 
 
 
 
-return  demandeInterventionsNonVue;
+return  envoyer;
     }
 
 
@@ -251,7 +329,6 @@ return  demandeInterventionsNonVue;
 
 
     @PostMapping  (value = "/interventionsimple")
-
     @ResponseBody
     public ModelMessage sendMeesageversEspace(@RequestBody  EnvoyerMessage message) throws IOException, SQLException ,EOFException{
 
@@ -298,6 +375,19 @@ return  demandeInterventionsNonVue;
 
 
         return  modelMessage;
+    }
+
+    @MessageMapping("/DemandeRejeter")
+    public void DemandeRejeter(@PathVariable Long  demandeIntervention){
+
+        DemandeIntervention demandeIntervention1=demandeRepository.findById(demandeIntervention).get();
+        demandeIntervention1.setEtat_Demande("Rejeter");
+        demandeIntervention1.setVisibiliter(false);
+        accountService.DemandeRejeter(demandeIntervention1);
+        String username=demandeIntervention1.getUtilisateurs().getUsername();
+        this.template.convertAndSend("/topic/rejeterDemande"+"/"+username,demandeIntervention1);
+
+
     }
 
 
@@ -372,7 +462,8 @@ return  demandeInterventionsNonVue;
         return  modelMessage;
 
     }
-
+        
+   
 
    /*
     @PostMapping  (value = "/interventionsimple")
@@ -424,6 +515,9 @@ return  demandeInterventionsNonVue;
         return  modelMessage;
 
     }
+    
+    
+    
 
 
 

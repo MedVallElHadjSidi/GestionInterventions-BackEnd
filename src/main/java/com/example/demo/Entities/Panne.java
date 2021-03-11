@@ -15,11 +15,11 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Data
 
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Data
 public class Panne  implements Serializable {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idPanne;
@@ -33,16 +33,20 @@ public class Panne  implements Serializable {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 
     private Collection<DemandeIntervention>demandeInterventions;
-    @ManyToMany()
+   /* @ManyToMany()
     @JoinTable( name = "T_Panne_Materiels",
             joinColumns = @JoinColumn( name = "idPanne" ),
             inverseJoinColumns = @JoinColumn( name = "idMateriel" ) )
-
     @ToString.Exclude
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-
     private Collection<Materiel>materiels;
+    */
     @ManyToOne
     private  Categorie categorie;
+    
+    @OneToMany(mappedBy = "panne")
+    @ToString.Exclude
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private List<Materiel_Panne>materiel_Pannes;
 
 }

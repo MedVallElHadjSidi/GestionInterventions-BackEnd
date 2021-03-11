@@ -6,5 +6,5 @@ import lombok.*;
 @NoArgsConstructor @AllArgsConstructor
 public class ModelIntervenantService {
     private String serviceName;
-    private  String intervenantName;
+    private  String[] intervenantName;
 }

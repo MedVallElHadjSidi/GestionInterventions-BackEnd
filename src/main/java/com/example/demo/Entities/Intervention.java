@@ -7,20 +7,23 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 
 
 @Entity
 @Data
 
-@NoArgsConstructor
+
 @AllArgsConstructor
 @ToString
 public class Intervention implements Serializable  {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Long idIntervention;
-    private int dureIntervention;
-    private  String EtatIntervention;
+    private double dureIntervention;
+    private  String etatIntervention;
+    @Temporal(value = TemporalType.TIME)
+    private Date dred;
     
     @OneToOne
     private  Espace espace;
@@ -30,5 +33,7 @@ public class Intervention implements Serializable  {
     @JsonIgnore
     private  DemandeIntervention demandeIntervention;
 
-
+    public  Intervention(){
+        this.etatIntervention="EnCours";
+    }
 }

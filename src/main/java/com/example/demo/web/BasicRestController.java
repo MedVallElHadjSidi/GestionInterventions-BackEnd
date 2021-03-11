@@ -10,8 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
@@ -33,12 +35,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
 @RestController
 @CrossOrigin(origins = "*",allowedHeaders = "*")
 public class BasicRestController {
+	
     @Autowired
     private DemandeRepository demandeRepository;
     @Autowired
@@ -59,6 +63,8 @@ public class BasicRestController {
     private MaterielRepository materielRepository;
     @Autowired
     private  EspaceRepository espaceRepository;
+    @Autowired
+    private  InterventionRepository interventionRepository;
 
     @PostMapping("/addMateriel")
     public Materiel AjouterMateriel(@RequestBody ModelMateriel materiel) {
@@ -82,7 +88,7 @@ public class BasicRestController {
         String password = modelUser.getPassword();
         String confirm = modelUser.getConfirmation();
         if (!password.equals(confirm))
-            throw new RuntimeException("Verifier vOTRE PASSWORD");
+            throw new RuntimeException("Verifier votre PASSWORD");
         Utilisateur user = new Utilisateur();
         user.setCode(modelUser.getCode());
         user.setNom(modelUser.getNom());
@@ -129,10 +135,10 @@ public class BasicRestController {
     }
 
     @PostMapping("/AffectRespoService")
-    public ServiceBMCI AffectRespoService(@RequestBody ModelIntervenantService service) {
+    public ServiceBMCI AffectRespoService(@RequestBody ModelAffecterRsp service) {
         System.out.println(service);
 
-        return accountService.AffectRespoServic(service.getServiceName(), service.getIntervenantName());
+        return accountService.AffectRespoServic(service.getServiceName(), service.getRespoName());
 
     }
 
@@ -144,10 +150,16 @@ public class BasicRestController {
         */
         return  null;
     }
-
+/*
     @PostMapping("/addServiceIntervenant")
     public ServiceBMCI AddIntSer(@RequestBody ModelIntervenantService modelIntervenantService) {
         return accountService.AffectServiceIntervenant(modelIntervenantService.getServiceName(), modelIntervenantService.getIntervenantName());
+    }*/
+    
+    @PostMapping("/addServiceIntervenant")
+    public Boolean AddIntSer(@RequestBody ModelIntervenantService modelIntervenantService) {
+        return accountService.AffectServiceLstIntervenant(modelIntervenantService.getServiceName(), modelIntervenantService.getIntervenantName());
+        
     }
 
 
@@ -165,11 +177,18 @@ public class BasicRestController {
         return accountService.AddAdresse(adresse);
     }
 
-    @PostMapping("/affectAgUser")
+  /* Affecter agence un seul user 
+   *   @PostMapping("/affectAgUser")
 
     public Utilisateur AffectAgUser(@RequestBody ModelAffectAgUser modelAffectAgUser) {
 
         return accountService.AddAgenceUser(modelAffectAgUser.getNomAgence(), modelAffectAgUser.getUsername());
+    }*/
+    @PostMapping("/affectAgListUser")
+
+    public Boolean AffectAgListUser(@RequestBody ModelAffectAgUser modelAffectAgUser) {
+
+        return accountService.AddAgenceListUser(modelAffectAgUser.getNomAgence(), modelAffectAgUser.getUsername());
     }
 
 
@@ -205,8 +224,8 @@ public class BasicRestController {
 
         System.out.println("adresse chercher" + adresse.toString());
         return ResponseEntity.ok().body(adresse);
-
     }
+
 
     @GetMapping("/ChercherAllMaterielNames/{username}")
     public List<String> ChercherAllMaterielNames(@PathVariable String username) {
@@ -223,6 +242,8 @@ public class BasicRestController {
     public List<String> ChercherSousCategorieNames(@PathVariable String nom) {
         return categorieRepository.SousCategorieName(nom);
     }
+
+
 
     @GetMapping("/ChercherByCodeAdresseAll")
     public List<String> ChercherByCodeAdresseAll() {
@@ -289,18 +310,28 @@ public class BasicRestController {
         return  demandeInterventions;
     }
 
-    @GetMapping("/DemandeUserResolus/{username}")
-    public List<DemandeIntervention>DemandeUserResolu(@PathVariable String username){
-        List<DemandeIntervention>demandeInterventions=accountService.DemandeUserResolu(username);
-        for (DemandeIntervention d:demandeInterventions){
+    @GetMapping("/DemandeUserResolus/{page}/{username}")
+    public Page<DemandeIntervention>DemandeUserResolu(@PathVariable int page,@PathVariable String username){
+        Page<DemandeIntervention>demandeInterventions=accountService.DemandeUserResolu(username,page);
+        for (DemandeIntervention d:demandeInterventions.getContent()){
         if(d.getInterventions().size()>0){
             System.out.println("hello");
         }}
         return  demandeInterventions;
     }
-    @GetMapping("/DemandeRejeterUser/{username}")
-    public List<DemandeIntervention>DemandeUserRejeter(@PathVariable String username){
-        return  accountService.DemandeUserRejeter(username);
+    @GetMapping("/DemandeRejeterUser/{page}/{username}")
+    public Page<DemandeIntervention>DemandeUserRejeter(@PathVariable int page,@PathVariable String username){
+        return  accountService.DemandeUserRejeter(username,page);
+    }
+
+    @GetMapping("/DemandeUserNonResolus/{page}/{username}")
+    public Page<DemandeIntervention>DemandeUserNonResolu(@PathVariable int page,@PathVariable String username){
+        Page<DemandeIntervention>demandeInterventions=accountService.DemandesUserNonResolu(username,page);
+        for (DemandeIntervention d:demandeInterventions.getContent()){
+            if(d.getInterventions().size()>0){
+                System.out.println("hello");
+            }}
+        return  demandeInterventions;
     }
 
 
@@ -309,10 +340,16 @@ public class BasicRestController {
     public Espace ChercherEspace(@PathVariable Long id){
         Espace espace= (Espace) espaceRepository.findById(id).get();
         
-        for(ModelMessage m:espace.getCommentaire()){
-            System.out.println("message de"+m.getNom()+"message content"+m.getMessage());
+        if(espace.getCommentaire().size()>0){
+        	
+            System.out.println("message existe");
             
         }
+        
+        if(espace.getUtilisateurs().size()>0) {
+        	System.out.println("espace non vide ");
+        }
+        
         System.out.println("espace"+espace.getIdEspace()+"size commentaie"+espace.getCommentaire().size());
         
         return espace;
@@ -382,6 +419,17 @@ public class BasicRestController {
         demandeIntervention1.getPanne().setPhotos(decompressBytes(demandeIntervention.getPanne().getPhotos()));
         return  demandeIntervention1;
     }
+    
+    @GetMapping("/ChercherByidDemandeInterVensionEncours/{id}")
+    public DemandeIntervention ChercherByidDemandeInterVensionEncours(@PathVariable Long id) throws SQLException {
+        DemandeIntervention demandeIntervention=accountService.ChercherByidDemandeInterVensionEncours(id);
+        DemandeIntervention demandeIntervention1=null;
+        demandeIntervention1=demandeIntervention;
+        System.out.println(demandeIntervention1.getId_Demande());
+        demandeIntervention1.getPanne().setPhotos(decompressBytes(demandeIntervention.getPanne().getPhotos()));
+        return  demandeIntervention1;
+    }
+
 
 
     public static byte[] decompressBytes(byte[] data) {
@@ -401,6 +449,21 @@ public class BasicRestController {
         }
         return outputStream.toByteArray();
     }
+    @GetMapping("/rejeterNotifier/{page}/{username}")
+    public Page<DemandeIntervention>DemandeRejeterNotifier(@PathVariable int page ,@PathVariable String username){
+
+        return  accountService.DemandeUsersRejeterNotifier(username,page);
+    }
+    
+    @GetMapping("/rejeterNotifierModifier/{id}")
+    public DemandeIntervention DemandeRejeterLue(@PathVariable Long id) {
+    	return accountService.DemandeRejeterLue(id);
+    	
+    	
+    	
+    	
+    }
+
     @GetMapping("/rejeter/{d}")
     public void DemandeRejeter(@PathVariable Long d){
         DemandeIntervention demandeIntervention=demandeRepository.findById(d).get();
@@ -451,7 +514,9 @@ public class BasicRestController {
         for(DemandeIntervention d:demandeInterventions){
             System.out.println(d.getId_Demande()+"user"+d.getUtilisateurs().getUsername());
             if(d.getInterventions().size()>0){
+            	
                 System.out.println("hello intervenant");
+                
             }
         }
 
@@ -476,6 +541,72 @@ public class BasicRestController {
 
         return  accountService.NombreInterventionEncours();
     }
+    @GetMapping("/ServiceResolu/{page}")
+    public Page<DemandeIntervention> ServiceEnCours(@PathVariable  int page){
+        Pageable requestedPage = PageRequest.of(page, 5);
+        Page<DemandeIntervention>interventionsPages=demandeRepository.ServiceResolu(requestedPage);
+        for (DemandeIntervention i:interventionsPages.getContent()){
+            for (Intervention in:i.getInterventions()){
+
+            }
+        }
+        return interventionsPages;
+
+    }
+    @GetMapping("/DemandeUserEnAttente/{page}/{username}")
+    public  Page<DemandeIntervention>DemandeUserEnAttente(@PathVariable int page,@PathVariable String username){
+        Page<DemandeIntervention>demandeInterventions=accountService.DemandeUserEnAttente(username,page);
+        System.out.println(demandeInterventions.getContent().size());
+        return  accountService.DemandeUserEnAttente(username,page);
+    }
+
+    @GetMapping("/ConsulterHistoriqueUser/{page}/{username}")
+    public  Page<DemandeIntervention>ConsulterHistoriqueUser(@PathVariable int page,@PathVariable String username){
+        Page<DemandeIntervention>demandeInterventions=accountService.ConsulterHistroriques(username,page);
+        System.out.println(demandeInterventions.getContent().size());
+        for(DemandeIntervention dm:demandeInterventions.getContent()){
+            for (Intervention in:dm.getInterventions()){
+
+            }
+
+        }
+        return  demandeInterventions;
+    }
+    @PostMapping("/chercherDemandeComplet")
+    public Page<DemandeIntervention>DemandeChercherComplet(@RequestBody ModelRecherche modelRecherche){
+        System.out.println(modelRecherche);
+        Page<DemandeIntervention>demandeInterventions=accountService.ChercherComplet(modelRecherche);
+        List<DemandeIntervention>demandeInterventions2=demandeInterventions.getContent();
+        for(DemandeIntervention d:demandeInterventions2) {
+        	System.out.println(d.getInterventions().size());
+        	
+        }
+        
+        return  demandeInterventions;
+    }
+    @PutMapping("/ModifierDemande/{id}")
+    public ResponseEntity<DemandeIntervention> ModifierDemande(@PathVariable Long id, @RequestBody DemandeIntervention demandeIntervention){
+        Optional<DemandeIntervention>demandeIntervention1=demandeRepository.findById(id);
+        if(demandeIntervention1.isPresent()){
+            DemandeIntervention demandeIntervention2=demandeIntervention1.get();
+            demandeIntervention2.setEtat_Demande(demandeIntervention.getEtat_Demande());
+
+            return new  ResponseEntity<>(demandeRepository.save(demandeIntervention2),HttpStatus.OK);
+        }
+        else {
+            return  new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+    }
+    
+    @PostMapping("/EditerDemandeIntervention")
+    public ResponseEntity<DemandeIntervention>EditerDemandeIntervention(@RequestBody ModelEditDemande modelEditDemande){
+    	
+    	return ResponseEntity.ok().body(accountService.EditerDemande(modelEditDemande));
+    	
+    }
+
+
 
 }
 

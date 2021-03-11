@@ -7,6 +7,11 @@ import com.example.demo.Entities.Role;
 import com.example.demo.Entities.Utilisateur;
 import com.example.demo.Services.AccountService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -33,6 +38,7 @@ public class GestionInterventionsApplication implements CommandLineRunner {
 	private AccountService accountService;
 	@Autowired
 	private RepositoryRestConfiguration restConfiguration;
+	
 	@Bean
 	public BCryptPasswordEncoder getBcrypte(){
 		return  new BCryptPasswordEncoder();
@@ -53,12 +59,41 @@ public class GestionInterventionsApplication implements CommandLineRunner {
 	public static void main(String[] args) {
 		SpringApplication.run(GestionInterventionsApplication.class, args);
 
+	
+
 	}
 
 	@Override
 	public void run(String... args) throws Exception {
+		SimpleDateFormat format=new SimpleDateFormat("HH:mm:ss");
+		Date date=new Date();
+		String da=format.format(new Date());
+		System.out.println(da);
+		Date date2=format.parse(da);
+		//System.out.println(date2);
+
+		double duree=0.5*3600;
+		int her=(int) (duree/3500);
+		date.setHours(her);
+		
+		double q=duree%3600;
+		int minite=(int) (q/60);
+		date.setMinutes(minite);
+		double seconde=q%60;
+		date.setSeconds((int) seconde);
+		String d=format.format(date);
+		try {
+			date2=format.parse(d);
+			System.out.println(date2);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	
 /*
-		Utilisateur utilisateur=accountService.addUser(new Utilisateur("adm1","MedVall","MedVall@gmail.com","admin","1234","Active",null,null,null,null,null));
+
+		Utilisateur utilisateur=accountService.addUser(new Utilisateur("adm1","Farouk ElMouna","Farouk@gmail.com","admin","1234","Active",0,null,null,null,null));
 		Role role =rolesRepository.save(new Role(null,"ADMIN"));
 		accountService.AddRoles("admin","ADMIN");
 /*

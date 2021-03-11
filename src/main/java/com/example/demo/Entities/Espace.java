@@ -28,9 +28,9 @@ public class Espace implements Serializable {
     @JsonIgnore
     private  Intervention intervention;
     @ManyToMany
-    @JoinTable( name = "T_Users_Espace_Associations",
+   /* @JoinTable( name = "T_Users_Espace_Associations",
             joinColumns = @JoinColumn( name = "idEspace" ),
-            inverseJoinColumns = @JoinColumn( name = "code" ) )
+            inverseJoinColumns = @JoinColumn( name = "code" ) )*/
     private Collection<Utilisateur>utilisateurs;
 
     public Espace() {

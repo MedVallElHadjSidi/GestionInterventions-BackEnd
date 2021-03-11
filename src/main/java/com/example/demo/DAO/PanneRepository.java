@@ -6,4 +6,5 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 
 public interface PanneRepository extends JpaRepository<Panne,Long> {
+
 }

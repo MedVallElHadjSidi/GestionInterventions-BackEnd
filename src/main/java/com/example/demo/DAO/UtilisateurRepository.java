@@ -13,11 +13,8 @@ public interface UtilisateurRepository  extends JpaRepository<Utilisateur,String
     public Utilisateur findByUsername(String code);
     @Query("select distinct us from Utilisateur us where us.username like:x")
     public Utilisateur findByUserNameInter(@Param("x")String username);
-
-    @Query("select DISTINCT  ut from Utilisateur ut,ServiceBMCI sr where ut.service.codeService=sr.codeService and ut.etat='Active' and sr.nom='Informatique'")
-    public List<Utilisateur>IntervenantNameAvecService();
-
-    @Query("select distinct u from Utilisateur u")
+    
+    @Query("select distinct u from Utilisateur u where  u.agence is null")
     public List<Utilisateur> UserNamesSansRoles();
 
 
